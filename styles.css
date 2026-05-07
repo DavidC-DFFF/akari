@@ -1,0 +1,168 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f7fa;
+  color: #111827;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2rem 1.2rem 3rem;
+}
+
+header {
+  margin-bottom: 1.8rem;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 2.6vw, 3rem);
+}
+
+p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.controls {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+select,
+input[type="number"] {
+  width: 100%;
+}
+
+input[type="number"] {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  font: inherit;
+}
+
+.custom-size-controls[hidden] {
+  display: none;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.9rem 1.4rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+}
+
+button.primary {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.16);
+}
+
+button:not(.primary) {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+button.batch-action {
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(15, 118, 110, 0.14);
+}
+
+.difficulty-info {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #1e3a8a;
+  font-size: 0.95rem;
+}
+
+.helper-text {
+  margin-top: 1rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.status {
+  margin-top: 0.85rem;
+  color: #374151;
+}
+
+.preview {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+canvas {
+  max-width: 100%;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .control-row {
+    grid-template-columns: 1fr;
+  }
+
+  button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Akari Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header>
+      <h1>Générateur de grilles Akari</h1>
+      <p>Génère une grille Light Up / Akari prête à être résolue par logique, comme un démineur, puis exporte la version vierge ou la version solution en PNG HD.</p>
+    </header>
+
+    <section class="controls">
+      <div class="control-row">
+        <label for="difficultySelect">Niveau de difficulté</label>
+        <select id="difficultySelect">
+          <option value="decouverte">Découverte</option>
+          <option value="facile" selected>Facile</option>
+          <option value="intermediaire">Intermédiaire</option>
+          <option value="difficile">Difficile</option>
+          <option value="expert">Expert</option>
+          <option value="personnalise">Personnalisé</option>
+        </select>
+      </div>
+
+      <div class="custom-size-controls" id="customSizeControls" hidden>
+        <div class="control-row">
+          <label for="customWidthInput">Largeur</label>
+          <input id="customWidthInput" type="number" min="5" max="20" step="1" value="10" />
+        </div>
+        <div class="control-row">
+          <label for="customHeightInput">Hauteur</label>
+          <input id="customHeightInput" type="number" min="5" max="20" step="1" value="10" />
+        </div>
+      </div>
+
+      <div class="control-row">
+        <label for="batchCountInput">Nombre de grilles à générer</label>
+        <input id="batchCountInput" type="number" min="1" max="99" step="1" value="1" />
+      </div>
+
+      <div class="difficulty-info" id="difficultyInfo">Formats : 7×7 ; 30 grilles recommandées.</div>
+
+      <div class="button-row">
+        <button id="generateButton" class="primary">Générer une grille</button>
+        <button id="batchGenerateButton" class="batch-action">Générer 1 grille + solution</button>
+        <button id="hintButton">Indice (pas à pas)</button>
+        <button id="exportBlankButton">Exporter grille vierge</button>
+        <button id="exportSolutionButton">Exporter grille solution</button>
+      </div>
+
+      <div class="helper-text">Clic gauche : poser une ampoule. Clic droit : poser une croix. Un clic sur une case déjà marquée l’efface.</div>
+      <div class="status" id="statusMessage" aria-live="polite">Cliquez sur « Générer une grille » pour commencer.</div>
+    </section>
+
+    <section class="preview">
+      <canvas id="akariCanvas" aria-label="Aperçu de la grille Akari"></canvas>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
