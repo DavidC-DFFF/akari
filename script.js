@@ -17,6 +17,7 @@ const statusMessage = document.getElementById('statusMessage');
 const difficultyPresets = {
   mini4: { label: '4x4', fileLabel: '4x4', fileRank: 9, sizes: [4], count: 12, density: 0.31, targetLevel: 'mini4', mini4: true, blackCells: 5, minSolutionBulbs: 3, maxSolutionBulbs: 5, minClueTypes: 2, maxZeroClues: 3, maxHighClues: 2, maxFourClues: 1, maxIndirectSteps: 1, minMiniScore: 22, maxMiniScore: 42 },
   mini6: { label: '6x6', fileLabel: '6x6', fileRank: 10, sizes: [6], count: 24, density: 0.32, targetLevel: 'mini6', mini6: true, minBlackCells: 10, maxBlackCells: 13, minVisibleClues: 9, maxVisibleClues: 12, minSolutionBulbs: 6, maxSolutionBulbs: 11, minClueTypes: 3, maxZeroClues: 5, maxHighClues: 5, maxFourClues: 1, maxIndirectSteps: 3, maxLogicIterations: 8 },
+  mini8: { label: '8x8', fileLabel: '8x8', fileRank: 11, sizes: [8], count: 48, density: 0.30, targetLevel: 'mini8', mini8: true, minBlackCells: 15, maxBlackCells: 20, minVisibleClues: 12, maxVisibleClues: 18, minSolutionBulbs: 12, maxSolutionBulbs: 19, minClueTypes: 3, maxZeroClues: 7, maxHighClues: 8, maxFourClues: 3, maxIndirectSteps: 6, maxLogicIterations: 11 },
   decouverte: { label: 'Apprenti', fileLabel: 'Apprenti', fileRank: 1, sizes: [7], count: 30, density: 0.30, targetLevel: 'decouverte', minClueTypes: 2 },
   facile: { label: 'Novice', fileLabel: 'Novice', fileRank: 2, sizes: [7], count: 40, density: 0.22, targetLevel: 'facile', clueKeepRate: 0.55, maxVisibleClues: 8, minClueTypes: 3 },
   intermediaire: { label: 'Initié', fileLabel: 'Initie', fileRank: 3, sizes: [8, 10], count: 50, density: 0.24, targetLevel: 'intermediaire', minClueTypes: 3, minHighClues: 1, highClueSeeds: 1 },
@@ -94,6 +95,10 @@ function updateDifficultyInfo() {
     difficultyInfo.textContent = 'Format : 6×6 · 9 à 12 indices visibles · minimum 6 à 11 ampoules · analyse logique directe/indirecte';
     return;
   }
+  if (preset.mini8) {
+    difficultyInfo.textContent = 'Format : 8×8 · 12 à 18 indices visibles · minimum 12 à 19 ampoules · analyse logique directe/indirecte';
+    return;
+  }
   const formattedSizes = preset.sizes.length > 1 ? preset.sizes.map((size) => `${size}×${size}`).join(' / ') : `${preset.sizes[0]}×${preset.sizes[0]}`;
   difficultyInfo.textContent = `Formats : ${formattedSizes} · Niveau validé par le solveur · ${preset.count} grilles recommandées`;
 }
@@ -145,6 +150,8 @@ async function generatePuzzle() {
       statusMessage.textContent = formatMini4GenerationStatus(puzzle);
     } else if (preset.mini6) {
       statusMessage.textContent = formatMini6GenerationStatus(puzzle);
+    } else if (preset.mini8) {
+      statusMessage.textContent = formatMini8GenerationStatus(puzzle);
     } else if (preset.gameLevel) {
       statusMessage.textContent = `Grille générée (${preset.label} - ${puzzle.width}×${puzzle.height}), avec indices faciles masqués.`;
     } else {
@@ -165,6 +172,9 @@ async function generatePuzzleData(preset) {
   }
   if (preset.mini6) {
     return generateMini6PuzzleData(preset);
+  }
+  if (preset.mini8) {
+    return generateMini8PuzzleData(preset);
   }
   const needsMoreAttempts = preset.clueKeepRate || preset.gameLevel || preset.targetLevel === 'decouverte';
   const maxAttempts = preset.custom ? 80 : preset.gameLevel ? 45 : needsMoreAttempts ? 220 : 120;
@@ -726,6 +736,7 @@ function analyzeMini6Difficulty(evaluation, minimumBulbs, blackCells, visibleClu
     minimumBulbs,
     indirectSteps,
     directSteps,
+    blackCells,
     visibleClues,
     blankBlackCells,
     mediumClues,
@@ -754,6 +765,325 @@ function formatMini6GenerationStatus(puzzle) {
     : `${analysis.indirectSteps} coup${analysis.indirectSteps > 1 ? 's' : ''} indirect${analysis.indirectSteps > 1 ? 's' : ''}`;
   const score = getPuzzleResolutionScore(puzzle);
   return `Grille générée (6x6 - minimum ${analysis.minimumBulbs} ampoules, difficulté ${score}/100). Analyse ${analysis.label} : ${analysis.visibleClues} indices visibles, ${indirectText}.`;
+}
+
+async function generateMini8PuzzleData(preset) {
+  const targetMinimum = pickMini8TargetMinimum();
+  const maxAttempts = 1200;
+  let fallbackCandidate = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const blackCells = pickMini8BlackCellCount(preset, targetMinimum);
+    const grid = createMini8Grid(blackCells);
+    let solution = solveAkari(grid, 1200);
+    if (!solution) {
+      if (attempt % 16 === 0) {
+        await waitForPaint();
+      }
+      continue;
+    }
+
+    solution = enhanceMini8SolutionClues(grid, solution, targetMinimum);
+    const minimumBulbs = countSolutionBulbs(solution);
+    if (minimumBulbs < preset.minSolutionBulbs || minimumBulbs > preset.maxSolutionBulbs) {
+      if (attempt % 16 === 0) {
+        await waitForPaint();
+      }
+      continue;
+    }
+
+    const fullClues = buildClues(grid, solution);
+    const targetVisible = pickMini8TargetVisible(preset, blackCells, targetMinimum);
+    const clues = reduceMini8CluesPreservingLogic(grid, solution, fullClues, preset, targetVisible);
+    const candidate = evaluateMini8Candidate(grid, solution, clues, preset);
+    if (!candidate) {
+      if (attempt % 16 === 0) {
+        await waitForPaint();
+      }
+      continue;
+    }
+
+    if (candidate.evaluatedDifficulty.minimumBulbs === targetMinimum) {
+      return candidate;
+    }
+
+    if (!fallbackCandidate || isBetterMini8Fallback(candidate, fallbackCandidate, targetMinimum)) {
+      fallbackCandidate = candidate;
+    }
+
+    if (attempt % 16 === 0) {
+      await waitForPaint();
+    }
+  }
+
+  return fallbackCandidate;
+}
+
+function pickMini8TargetMinimum() {
+  const roll = Math.random();
+  if (roll < 0.06) {
+    return 12;
+  }
+  if (roll < 0.18) {
+    return 13;
+  }
+  if (roll < 0.38) {
+    return 14;
+  }
+  if (roll < 0.62) {
+    return 15;
+  }
+  if (roll < 0.82) {
+    return 16;
+  }
+  if (roll < 0.94) {
+    return 17;
+  }
+  if (roll < 0.99) {
+    return 18;
+  }
+  return 19;
+}
+
+function pickMini8BlackCellCount(preset, targetMinimum) {
+  const options = targetMinimum <= 13
+    ? [15, 16, 17, 18]
+    : targetMinimum >= 18
+      ? [17, 18, 19, 20]
+      : [15, 16, 17, 18, 19, 20];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function pickMini8TargetVisible(preset, blackCells, targetMinimum) {
+  const hiddenLimit = targetMinimum >= 17 ? 5 : 4;
+  const hiddenClues = Math.random() < 0.84 ? Math.floor(Math.random() * hiddenLimit) : 0;
+  return Math.max(preset.minVisibleClues, Math.min(preset.maxVisibleClues, blackCells - hiddenClues));
+}
+
+function createMini8Grid(blackCells) {
+  const size = 8;
+  let fallbackGrid = null;
+
+  for (let shapeAttempt = 0; shapeAttempt < 120; shapeAttempt += 1) {
+    const grid = Array.from({ length: size }, () => Array.from({ length: size }, () => 0));
+    const cells = [];
+    for (let y = 0; y < size; y += 1) {
+      for (let x = 0; x < size; x += 1) {
+        cells.push([x, y]);
+      }
+    }
+    shuffleArray(cells);
+    for (let index = 0; index < blackCells; index += 1) {
+      const [x, y] = cells[index];
+      grid[y][x] = 1;
+    }
+    fallbackGrid = grid;
+    if (isMini8ShapeAllowed(grid, blackCells)) {
+      return grid;
+    }
+  }
+
+  return fallbackGrid;
+}
+
+function isMini8ShapeAllowed(grid, blackCells) {
+  if (countBlackCells(grid) !== blackCells) {
+    return false;
+  }
+  for (let y = 0; y < grid.length; y += 1) {
+    const blackInRow = grid[y].filter((value) => value === 1).length;
+    if (blackInRow > 5) {
+      return false;
+    }
+  }
+  for (let x = 0; x < grid[0].length; x += 1) {
+    let blackInColumn = 0;
+    for (let y = 0; y < grid.length; y += 1) {
+      if (grid[y][x] === 1) {
+        blackInColumn += 1;
+      }
+    }
+    if (blackInColumn > 5) {
+      return false;
+    }
+  }
+  return !hasSolidBlackBlock(grid);
+}
+
+function hasSolidBlackBlock(grid) {
+  for (let y = 0; y < grid.length - 1; y += 1) {
+    for (let x = 0; x < grid[0].length - 1; x += 1) {
+      if (grid[y][x] === 1 && grid[y][x + 1] === 1 && grid[y + 1][x] === 1 && grid[y + 1][x + 1] === 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function enhanceMini8SolutionClues(grid, solution, targetMinimum) {
+  const enhanced = solution.map((row) => row.slice());
+  const blackCells = collectInteriorBlackCells(grid);
+  const boostLimit = targetMinimum >= 18 ? 10 : targetMinimum >= 16 ? 8 : targetMinimum >= 14 ? 5 : 3;
+  shuffleArray(blackCells);
+
+  let boosted = 0;
+  for (const [x, y] of blackCells) {
+    if (tryAddHighClueSeed(grid, enhanced, x, y)) {
+      boosted += 1;
+      if (boosted >= boostLimit) {
+        break;
+      }
+    }
+  }
+
+  return enhanced;
+}
+
+function reduceMini8CluesPreservingLogic(grid, solution, fullClues, preset, targetVisible) {
+  const clues = fullClues.map((row) => row.slice());
+  const clueCells = collectVisibleClueCells(clues);
+  shuffleArray(clueCells);
+  clueCells.sort(([ax, ay], [bx, by]) => clues[ay][ax] - clues[by][bx]);
+
+  for (const [x, y] of clueCells) {
+    if (countVisibleClues(clues) <= targetVisible) {
+      break;
+    }
+    const previous = clues[y][x];
+    clues[y][x] = null;
+    if (
+      countVisibleClues(clues) < preset.minVisibleClues
+      || !logicSolveAkari(grid, clues)
+      || !verifyUniqueSolution(grid, clues, solution)
+    ) {
+      clues[y][x] = previous;
+    }
+  }
+
+  return clues;
+}
+
+function evaluateMini8Candidate(grid, solution, clues, preset) {
+  const blackCells = countBlackCells(grid);
+  const visibleClues = countVisibleClues(clues);
+  const minimumBulbs = countSolutionBulbs(solution);
+
+  if (blackCells < preset.minBlackCells || blackCells > preset.maxBlackCells) {
+    return null;
+  }
+  if (visibleClues < preset.minVisibleClues || visibleClues > preset.maxVisibleClues) {
+    return null;
+  }
+  if (minimumBulbs < preset.minSolutionBulbs || minimumBulbs > preset.maxSolutionBulbs) {
+    return null;
+  }
+
+  const histogram = getClueHistogram(clues);
+  const visibleTypes = histogram.filter((count) => count > 0).length;
+  const highClues = histogram[3] + histogram[4];
+  if (visibleTypes < preset.minClueTypes) {
+    return null;
+  }
+  if (histogram[0] > preset.maxZeroClues || highClues > preset.maxHighClues || histogram[4] > preset.maxFourClues) {
+    return null;
+  }
+  if (histogram[2] + highClues < 3) {
+    return null;
+  }
+
+  const evaluatedDifficulty = evaluateStandardCandidate(grid, clues, solution);
+  if (!evaluatedDifficulty) {
+    return null;
+  }
+  const indirectSteps = getIndirectStepCount(evaluatedDifficulty.stats);
+  if (indirectSteps > preset.maxIndirectSteps || evaluatedDifficulty.stats.iterations > preset.maxLogicIterations) {
+    return null;
+  }
+
+  const mini8Analysis = analyzeMini8Difficulty(evaluatedDifficulty, minimumBulbs, blackCells, visibleClues);
+  const resolutionScore = normalizeResolutionScore(mini8Analysis.relativeScore, 80, 210);
+  return {
+    grid,
+    solution,
+    clues,
+    evaluatedDifficulty: {
+      ...evaluatedDifficulty,
+      level: preset.targetLevel,
+      label: preset.label,
+      minimumBulbs,
+      resolutionScore,
+      mini8Analysis,
+    },
+    width: 8,
+    height: 8,
+  };
+}
+
+function analyzeMini8Difficulty(evaluation, minimumBulbs, blackCells, visibleClues) {
+  const stats = evaluation.stats || {};
+  const histogram = evaluation.histogram || [0, 0, 0, 0, 0];
+  const indirectSteps = getIndirectStepCount(stats);
+  const directSteps = (stats.clueBulbs || 0)
+    + (stats.clueCrosses || 0)
+    + (stats.singleSourceBulbs || 0)
+    + (stats.forcedCrosses || 0);
+  const mediumClues = histogram[2] || 0;
+  const highClues = (histogram[3] || 0) + (histogram[4] || 0);
+  const blankBlackCells = blackCells - visibleClues;
+  const relativeScore = minimumBulbs * 7
+    + indirectSteps * 13
+    + mediumClues * 2
+    + highClues * 5
+    + blankBlackCells * 3
+    + Math.max(0, (stats.iterations || 1) - 1) * 4
+    + (stats.singleSourceBulbs || 0) * 0.8
+    + Math.max(0, visibleClues - 14) * 2;
+
+  let label = 'directe';
+  if (indirectSteps >= 3) {
+    label = 'indirecte';
+  } else if (minimumBulbs >= 18 || highClues >= 5) {
+    label = 'serree';
+  } else if (minimumBulbs >= 15 || mediumClues >= 4 || indirectSteps >= 1) {
+    label = 'tactique';
+  }
+
+  return {
+    label,
+    relativeScore,
+    minimumBulbs,
+    indirectSteps,
+    directSteps,
+    blackCells,
+    visibleClues,
+    blankBlackCells,
+    mediumClues,
+    highClues,
+  };
+}
+
+function isBetterMini8Fallback(candidate, currentBest, targetMinimum) {
+  const candidateMinimum = candidate.evaluatedDifficulty.minimumBulbs;
+  const currentMinimum = currentBest.evaluatedDifficulty.minimumBulbs;
+  const candidateDistance = Math.abs(candidateMinimum - targetMinimum);
+  const currentDistance = Math.abs(currentMinimum - targetMinimum);
+  if (candidateDistance !== currentDistance) {
+    return candidateDistance < currentDistance;
+  }
+  return candidate.evaluatedDifficulty.mini8Analysis.relativeScore > currentBest.evaluatedDifficulty.mini8Analysis.relativeScore;
+}
+
+function formatMini8GenerationStatus(puzzle) {
+  const analysis = puzzle.evaluatedDifficulty.mini8Analysis;
+  if (!analysis) {
+    return `Grille générée (8x8 - ${puzzle.width}×${puzzle.height}), résoluble par logique.`;
+  }
+  const indirectText = analysis.indirectSteps === 0
+    ? 'aucun coup indirect'
+    : `${analysis.indirectSteps} coup${analysis.indirectSteps > 1 ? 's' : ''} indirect${analysis.indirectSteps > 1 ? 's' : ''}`;
+  const score = getPuzzleResolutionScore(puzzle);
+  return `Grille générée (8x8 - minimum ${analysis.minimumBulbs} ampoules, difficulté ${score}/100). Analyse ${analysis.label} : ${analysis.visibleClues} indices visibles, ${analysis.blankBlackCells} case${analysis.blankBlackCells > 1 ? 's' : ''} muette${analysis.blankBlackCells > 1 ? 's' : ''}, ${indirectText}.`;
 }
 
 function setCurrentPuzzle(puzzle) {
@@ -2170,7 +2500,7 @@ async function generateBatchFiles() {
 
 function buildPuzzleFileBaseName(preset, puzzle, index, padLength) {
   const suffix = String(index).padStart(padLength, '0');
-  if (preset.mini4 || preset.mini6) {
+  if (preset.mini4 || preset.mini6 || preset.mini8) {
     return `${preset.fileLabel}-${formatDifficultyScoreForFile(puzzle)}-${suffix}`;
   }
   return `${preset.fileRank}-${preset.fileLabel}-${suffix}`;
@@ -2183,7 +2513,7 @@ function formatDifficultyScoreForFile(puzzle) {
 
 function buildBatchZipFileName(preset, count) {
   const suffix = String(count).padStart(2, '0');
-  if (preset.mini4 || preset.mini6) {
+  if (preset.mini4 || preset.mini6 || preset.mini8) {
     return `${preset.fileLabel}-${suffix}grilles.zip`;
   }
   return `${getBatchArchiveRank(preset)}-${preset.fileLabel}-${suffix}grilles.zip`;

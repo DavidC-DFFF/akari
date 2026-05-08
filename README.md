@@ -12,11 +12,12 @@ Aucune installation n'est necessaire : le projet ne depend d'aucun package exter
 
 ## Fonctionnalites
 
-- Choix limite a deux formats : 4x4 et 6x6.
+- Choix limite a trois formats : 4x4, 6x6 et 8x8.
 - Generation de grilles Akari resolubles par logique.
 - Score de difficulte de resolution sur 100 apres chaque generation.
 - Mode 4x4 calibre sur des grilles compactes : 5 indices numerotes, minimum de 3 a 5 ampoules, unicite et analyse des deductions directes/indirectes.
 - Mode 6x6 calibre sur des grilles compactes : 9 a 12 indices visibles, minimum de 6 a 11 ampoules, cases noires muettes possibles, unicite et analyse logique.
+- Mode 8x8 calibre sur des grilles plus larges : 12 a 18 indices visibles, minimum de 12 a 19 ampoules, cases noires muettes possibles, unicite et score logique de resolution.
 - Interaction dans la grille :
   - clic gauche : poser une ampoule ;
   - clic droit : poser une croix ;
@@ -31,6 +32,7 @@ Aucune installation n'est necessaire : le projet ne depend d'aucun package exter
 ```text
 4x4
 6x6
+8x8
 ```
 
 Le score affiche apres generation est normalise sur 100. Il combine les criteres logiques de la grille : minimum d'ampoules, repartition des indices, contraintes indirectes, nombre d'iterations du solveur et densite des deductions.
@@ -44,6 +46,7 @@ Le ZIP est nomme avec le format :
 ```text
 4x4-12grilles.zip
 6x6-24grilles.zip
+8x8-48grilles.zip
 ```
 
 Les fichiers contenus dans le ZIP suivent ce format :
@@ -51,8 +54,8 @@ Les fichiers contenus dans le ZIP suivent ce format :
 ```text
 4x4-73-01.png
 sol-4x4-73-01.png
-4x4-68-02.png
-sol-4x4-68-02.png
+8x8-68-02.png
+sol-8x8-68-02.png
 ```
 
 `xx` correspond au score de difficulte de resolution sur 100, et `yy` au numero de la grille dans le lot. Les scores inferieurs a 10 sont prefixes par un zero, par exemple `4x4-08-01.png`. Les solutions sont prefixees par `sol-`.
@@ -60,8 +63,8 @@ sol-4x4-68-02.png
 Pour les exports simples, l'index utilise `00`, par exemple :
 
 ```text
-6x6-84-00.png
-sol-6x6-84-00.png
+8x8-84-00.png
+sol-8x8-84-00.png
 ```
 
 ## Structure
