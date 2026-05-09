@@ -56,11 +56,13 @@ label {
 }
 
 select,
-input[type="number"] {
+input[type="number"],
+input[type="text"] {
   width: 100%;
 }
 
-input[type="number"] {
+input[type="number"],
+input[type="text"] {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 0.75rem 0.85rem;
@@ -69,6 +71,70 @@ input[type="number"] {
 
 .custom-size-controls[hidden] {
   display: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.mode-row {
+  margin-bottom: 1rem;
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggle-label input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+}
+
+.resolver-panel {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.resolver-size-row {
+  margin-bottom: 1rem;
+}
+
+.resolver-size-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.resolver-size-inputs input {
+  max-width: 6rem;
+}
+
+.resolver-tools {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.resolver-tools-label {
+  font-weight: 600;
+}
+
+.resolver-tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.resolver-tool-button.active {
+  background: #111827;
+  color: #ffffff;
 }
 
 .button-row {
@@ -127,10 +193,47 @@ button.batch-action {
   font-size: 0.95rem;
 }
 
+.difficulty-details {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.difficulty-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+.difficulty-details-grid > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.difficulty-label {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.difficulty-details strong {
+  color: #111827;
+  font-size: 1rem;
+}
+
 .helper-text {
   margin-top: 1rem;
   color: #4b5563;
   font-size: 0.95rem;
+}
+
+.export-helper {
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 .status {
@@ -160,6 +263,10 @@ canvas {
 @media (max-width: 640px) {
   .control-row {
     grid-template-columns: 1fr;
+  }
+
+  .resolver-size-inputs {
+    flex-wrap: wrap;
   }
 
   button {

@@ -14,12 +14,22 @@
     </header>
 
     <section class="controls">
+      <div class="mode-row">
+        <label class="toggle-label" for="resolverToggle">
+          <input id="resolverToggle" type="checkbox" />
+          <span>Mode resolver</span>
+        </label>
+      </div>
+
+      <div id="generatorPanel">
       <div class="control-row">
         <label for="difficultySelect">Niveau de difficulté</label>
         <select id="difficultySelect">
           <option value="mini4" selected>4x4</option>
           <option value="mini6">6x6</option>
           <option value="mini8">8x8</option>
+          <option value="mini10">10x10</option>
+          <option value="mini20">20x20</option>
         </select>
       </div>
 
@@ -39,18 +49,84 @@
         <input id="batchCountInput" type="number" min="1" max="99" step="1" value="1" />
       </div>
 
+      <div class="control-row">
+        <label for="batchSizeFilterInput">Tailles batch KDP</label>
+        <input id="batchSizeFilterInput" type="text" value="4,6,8" placeholder="4,6,8,10..." />
+      </div>
+
+      <div class="control-row">
+        <label for="batchSortSelect">Tri du ZIP</label>
+        <select id="batchSortSelect">
+          <option value="difficulty-desc" selected>DifficultÃ© dÃ©croissante</option>
+          <option value="difficulty-asc">DifficultÃ© croissante</option>
+          <option value="size-asc">Taille croissante</option>
+        </select>
+      </div>
+
+      <div class="helper-text export-helper">
+        Export KDP : entrez une ou plusieurs tailles parmi 4, 6, 8, 10, 12, 14, 16, 18, 20. Le nombre indiquÃ© est appliquÃ© par taille.
+      </div>
+      </div>
+
+      <div class="resolver-panel" id="resolverPanel" hidden>
+        <div class="control-row resolver-size-row">
+          <label for="resolverWidthInput">Taille de la grille</label>
+          <div class="resolver-size-inputs">
+            <input id="resolverWidthInput" type="number" min="4" max="20" step="1" value="8" />
+            <span>×</span>
+            <input id="resolverHeightInput" type="number" min="4" max="20" step="1" value="8" />
+            <button id="applyResolverSizeButton" type="button">Appliquer</button>
+          </div>
+        </div>
+
+        <div class="resolver-tools">
+          <span class="resolver-tools-label">Outil</span>
+          <div class="resolver-tool-row">
+            <button type="button" class="resolver-tool-button active" data-tool="black">Noir plein</button>
+            <button type="button" class="resolver-tool-button" data-tool="0">Noir 0</button>
+            <button type="button" class="resolver-tool-button" data-tool="1">Noir 1</button>
+            <button type="button" class="resolver-tool-button" data-tool="2">Noir 2</button>
+            <button type="button" class="resolver-tool-button" data-tool="3">Noir 3</button>
+            <button type="button" class="resolver-tool-button" data-tool="4">Noir 4</button>
+          </div>
+        </div>
+      </div>
+
       <div class="difficulty-info" id="difficultyInfo">Format : 4×4 · 5 indices numérotés · minimum 3 à 5 ampoules · analyse logique directe/indirecte</div>
       <div class="difficulty-info" id="difficultyScore">Score de difficulté : --/100</div>
 
-      <div class="button-row">
+      <div class="difficulty-details" id="difficultyDetails" hidden>
+        <div class="difficulty-details-grid">
+          <div><span class="difficulty-label">Logique</span><strong id="logicalScoreValue">--/100</strong></div>
+          <div><span class="difficulty-label">Ressenti</span><strong id="perceivedScoreValue">--/100</strong></div>
+          <div><span class="difficulty-label">Final</span><strong id="finalScoreValue">--/100</strong></div>
+          <div><span class="difficulty-label">Niveau</span><strong id="difficultyLevelValue">--</strong></div>
+          <div><span class="difficulty-label">Taille</span><strong id="difficultySizeValue">--</strong></div>
+          <div><span class="difficulty-label">Cases noires</span><strong id="blackCellCountValue">--</strong></div>
+          <div><span class="difficulty-label">Cases blanches</span><strong id="whiteCellCountValue">--</strong></div>
+          <div><span class="difficulty-label">Indices</span><strong id="clueCountValue">--</strong></div>
+          <div><span class="difficulty-label">Etapes</span><strong id="solveStepCountValue">--</strong></div>
+        </div>
+      </div>
+
+      <div class="button-row" id="generatorButtonRow">
         <button id="generateButton" class="primary">Générer une grille</button>
         <button id="batchGenerateButton" class="batch-action">Générer 1 grille + solution</button>
         <button id="hintButton">Indice (pas à pas)</button>
-        <button id="exportBlankButton">Exporter grille vierge</button>
-        <button id="exportSolutionButton">Exporter grille solution</button>
       </div>
 
-      <div class="helper-text">Clic gauche : poser une ampoule. Clic droit : poser une croix. Un clic sur une case déjà marquée l’efface.</div>
+      <div class="button-row" id="resolverActionRow" hidden>
+        <button id="solveResolverButton" class="primary">Résoudre</button>
+        <button id="printButton">Imprimer</button>
+      </div>
+
+      <div class="button-row">
+        <button id="exportBlankButton">Exporter grille vierge</button>
+        <button id="exportSolutionButton">Exporter grille solution</button>
+        <button id="exportCompletedButton">Exporter état courant N&B</button>
+      </div>
+
+      <div class="helper-text" id="helperText">Clic gauche : poser une ampoule. Clic droit : poser une croix. Un clic sur une case déjà marquée l’efface.</div>
       <div class="status" id="statusMessage" aria-live="polite">Cliquez sur « Générer une grille » pour commencer.</div>
     </section>
 

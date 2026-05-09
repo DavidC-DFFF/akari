@@ -24,7 +24,7 @@ Aucune installation n'est necessaire : le projet ne depend d'aucun package exter
   - clic sur une case deja marquee : effacer son contenu.
 - Detection des conflits en rouge.
 - Message `Well done` et effet cotillons lorsque la grille est resolue.
-- Export PNG HD de la grille vierge et de la solution.
+- Export PNG HD de la grille vierge, de la solution et de la grille completee en noir et blanc.
 - Generation en lot jusqu'a 99 grilles, telechargees dans un seul fichier ZIP.
 
 ## Difficultes
